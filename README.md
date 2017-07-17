@@ -72,7 +72,11 @@ docker run -it -p 8888:8888 -p 6006:6006 -v /sharedfolder:/root/sharedfolder flo
 	
 **GPU Version**
 ```bash
-nvidia-docker run -it -p 8888:8888 -p 6006:6006 -v /sharedfolder:/root/sharedfolder floydhub/dl-docker:gpu bash
+xhost +
+
+nvidia-docker run -it ---device /dev/video0 --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro floydhub/dl-docker:gpu bash
+
+xhost -
 ```
 Note the use of `nvidia-docker` rather than just `docker`
 
