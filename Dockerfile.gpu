@@ -6,9 +6,9 @@ ARG THEANO_VERSION=rel-0.8.2
 ARG TENSORFLOW_VERSION=0.12.1
 ARG TENSORFLOW_ARCH=gpu
 ARG KERAS_VERSION=1.2.0
-ARG LASAGNE_VERSION=v0.1
-ARG TORCH_VERSION=latest
-ARG CAFFE_VERSION=master
+# ARG LASAGNE_VERSION=v0.1
+# ARG TORCH_VERSION=latest
+# ARG CAFFE_VERSION=master
 
 #RUN echo -e "\n**********************\nNVIDIA Driver Version\n**********************\n" && \
 #	cat /proc/driver/nvidia/version && \
@@ -145,7 +145,7 @@ RUN pip --no-cache-dir install git+git://github.com/Theano/Theano.git@${THEANO_V
 		\n[nvcc]\nfastmath=True \
 		\n[blas]\nldflag = -L/usr/lib/openblas-base -lopenblas \
 		\n[DebugMode]\ncheck_finite=1" \
-	> /root/.theanorc
+	> /home/.theanorc
 
 
 # Install Keras
@@ -153,8 +153,8 @@ RUN pip --no-cache-dir install git+git://github.com/fchollet/keras.git@${KERAS_V
 
 
 # Install OpenCV
-RUN git clone --depth 1 https://github.com/opencv/opencv.git /root/opencv && \
-	cd /root/opencv && \
+RUN git clone --depth 1 https://github.com/opencv/opencv.git /home/opencv && \
+	cd /home/opencv && \
 	mkdir build && \
 	cd build && \
 	cmake -DWITH_QT=ON -DWITH_OPENGL=ON -DFORCE_VTK=ON -DWITH_TBB=ON -DWITH_GDAL=ON -DWITH_XINE=ON -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs -DBUILD_EXAMPLES=ON .. && \
@@ -164,13 +164,21 @@ RUN git clone --depth 1 https://github.com/opencv/opencv.git /root/opencv && \
 	echo 'ln /dev/null /dev/raw1394' >> ~/.bashrc
 
 # Set up notebook config
-COPY jupyter_notebook_config.py /root/.jupyter/
+COPY jupyter_notebook_config.py /home/.jupyter/
 
 # Jupyter has issues with being run directly: https://github.com/ipython/ipython/issues/7062
-COPY run_jupyter.sh /root/
+COPY run_jupyter.sh /home/
 
 # Expose Ports for TensorBoard (6006), Ipython (8888)
 EXPOSE 6006 8888
 
-WORKDIR "/root"
+RUN apt-get update && apt-get install -y dbus
+
+#RUN useradd -ms /bin/bash jfreek
+#RUN chown -R jfreek:jfreek /home
+#RUN echo 'jfreek:docker' | chpasswd
+#RUN usermod -a -G sudo jfreek
+#USER jfreek
+
+WORKDIR "/home"
 CMD ["/bin/bash"]
